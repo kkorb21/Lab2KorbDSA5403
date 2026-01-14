@@ -1,0 +1,10 @@
+name: CoinApp
+title:
+username: kkorb
+account: kkorb
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 16426636
+bundleId: 11444631
+url: https://kkorb.shinyapps.io/CoinApp/
+version: 1
