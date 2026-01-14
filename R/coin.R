@@ -1,17 +1,21 @@
 #' Bayesian Analysis for a Discrete-Theta Coin Model
 #'
 #' Computes the posterior distribution for a binomial coin-flip experiment
-#' using a discrete grid of possible values for \eqn{\theta}. The function
-#' returns posterior probabilities, the equal–tail \eqn{1-\alpha} credible
+#' using a discrete grid of possible values for theta. The function
+#' returns posterior probabilities, the equal–tail 1-alpha credible
 #' interval, the posterior mean, and the prior mean. A plot is also produced
 #' overlaying the prior, likelihood, and posterior.
 #'
 #' @name coin
 #'
 #' @param theta A numeric vector of possible values for the probability of
-#'   success `theta`, typically a grid on range 0 to 1.
-#' @param prior A numeric vector of prior probabilities corresponding to
-#'   `theta`. Must be the same length as `theta` and sum to 1.
+#'   success theta, typically a grid on the interval 0 to 1.
+#' @param prior Either:
+#'   \itemize{
+#'     \item a numeric vector of prior probabilities (same length as `theta` and summing to 1), or
+#'     \item a character string specifying a built‑in prior:
+#'       "uniform" or "triangular".
+#'   }
 #' @param n The number of binomial trials.
 #' @param z The number of observed successes.
 #' @param alpha The significance level used to compute the equal–tail
@@ -21,7 +25,7 @@
 #' \describe{
 #'   \item{posterior}{Posterior probabilities over the grid `theta`.}
 #'   \item{interval}{A numeric vector giving the equal–tail credible interval
-#'     \eqn{(L, U)}.}
+#'     (L, U).}
 #'   \item{posterior_mean}{The posterior mean of theta.}
 #'   \item{prior_mean}{The prior mean of theta.}
 #' }
@@ -31,11 +35,34 @@
 #' @export
 #'
 #' @examples
+#' # Uniform prior (numeric)
 #' theta <- seq(0, 1, length = 101)
 #' prior <- rep(1/101, 101)
 #' coin(theta, prior, n = 20, z = 12, alpha = 0.05)
+#'
+#' # Uniform prior (keyword)
+#' coin(theta, prior = "uniform", n = 10, z = 4, alpha = 0.05)
+#'
+#' # Triangular prior
+#' coin(theta, prior = "triangular", n = 10, z = 4, alpha = 0.05)
 
 coin <- function(theta, prior, n, z, alpha = 0.05) {
+
+  # --- Convert prior if character keyword -----------------------------------
+  if (is.character(prior)) {
+    prior <- tolower(prior)
+
+    if (prior == "uniform") {
+      prior <- rep(1 / length(theta), length(theta))
+
+    } else if (prior == "triangular") {
+      p <- pmin(theta, 1 - theta)
+      prior <- p / sum(p)
+
+    } else {
+      stop("prior must be a numeric vector or one of: 'uniform', 'triangular'")
+    }
+  }
 
   # --- Input checks ---------------------------------------------------------
   if (length(theta) != length(prior)) stop("theta and prior must be same length.")
@@ -59,7 +86,6 @@ coin <- function(theta, prior, n, z, alpha = 0.05) {
 
   # --- Equal-tail credible interval -----------------------------------------
   cdf_post <- cumsum(posterior)
-
   L_index <- which(cdf_post >= alpha/2)[1]
   U_index <- which(cdf_post >= 1 - alpha/2)[1]
 
@@ -67,14 +93,21 @@ coin <- function(theta, prior, n, z, alpha = 0.05) {
   U <- theta[U_index]
 
   # --- Plot: prior, likelihood, posterior -----------------------------------
+
   layout(matrix(1:1, nrow = 1))
 
+  # Scale likelihood to match prior height
+  lik_scaled <- likelihood / max(likelihood) * max(prior)
+
+  # Compute dynamic y-axis limit
+  ymax <- max(c(prior, posterior, lik_scaled))
+
   plot(theta, prior, type = "l", lwd = 2, col = "blue",
-       ylim = c(0, max(c(prior, likelihood, posterior))),
+       ylim = c(0, ymax),
        ylab = "Density / Probability", xlab = expression(theta),
        main = "Prior, Likelihood, and Posterior")
 
-  lines(theta, likelihood / max(likelihood) * max(prior),
+  lines(theta, lik_scaled,
         col = "darkgreen", lwd = 2, lty = 2)
 
   lines(theta, posterior, col = "red", lwd = 2)

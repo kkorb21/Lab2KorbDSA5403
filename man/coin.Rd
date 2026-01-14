@@ -8,10 +8,14 @@ coin(theta, prior, n, z, alpha = 0.05)
 }
 \arguments{
 \item{theta}{A numeric vector of possible values for the probability of
-success `theta`, typically a grid on range 0 to 1.}
+success theta, typically a grid on the interval 0 to 1.}
 
-\item{prior}{A numeric vector of prior probabilities corresponding to
-`theta`. Must be the same length as `theta` and sum to 1.}
+\item{prior}{Either:
+\itemize{
+  \item a numeric vector of prior probabilities (same length as `theta` and summing to 1), or
+  \item a character string specifying a built‑in prior:
+    "uniform" or "triangular".
+}}
 
 \item{n}{The number of binomial trials.}
 
@@ -25,20 +29,27 @@ A named list with components:
 \describe{
   \item{posterior}{Posterior probabilities over the grid `theta`.}
   \item{interval}{A numeric vector giving the equal–tail credible interval
-    \eqn{(L, U)}.}
+    (L, U).}
   \item{posterior_mean}{The posterior mean of theta.}
   \item{prior_mean}{The prior mean of theta.}
 }
 }
 \description{
 Computes the posterior distribution for a binomial coin-flip experiment
-using a discrete grid of possible values for \eqn{\theta}. The function
-returns posterior probabilities, the equal–tail \eqn{1-\alpha} credible
+using a discrete grid of possible values for theta. The function
+returns posterior probabilities, the equal–tail 1-alpha credible
 interval, the posterior mean, and the prior mean. A plot is also produced
 overlaying the prior, likelihood, and posterior.
 }
 \examples{
+# Uniform prior (numeric)
 theta <- seq(0, 1, length = 101)
 prior <- rep(1/101, 101)
 coin(theta, prior, n = 20, z = 12, alpha = 0.05)
+
+# Uniform prior (keyword)
+coin(theta, prior = "uniform", n = 10, z = 4, alpha = 0.05)
+
+# Triangular prior
+coin(theta, prior = "triangular", n = 10, z = 4, alpha = 0.05)
 }

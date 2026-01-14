@@ -1,0 +1,76 @@
+---
+title: "Lab2_Vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Lab2_Vignette}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+runtime: shiny
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "figures/"
+)
+```
+
+```{r setup}
+library(Lab2KorbDSA5403)
+```
+
+# Introduction
+
+This vignette introduces the Lab2KorbDSA5403 package, which provides tools for
+Bayesian analysis of a binomial coin‑flipping experiment when the probability of
+success, $\theta$, is restricted to a discrete grid of possible values.
+
+The package includes:
+
+- A function coin() that computes the posterior distribution for a discrete‑theta binomial model.
+- A Shiny app that interactively visualizes the prior, likelihood, and posterior.
+- A wrapper function *runCoinApp()* that launches the Shiny app from within the package.
+
+# The Discrete-Theta Coin Model
+
+Suppose a binomial experiment is performed with:
+
+- *n* trials
+- *z* observed successes
+- a discrete grid of possible values for $\theta$
+
+The function *coin(theta, prior, n, z, alpha)* computes:
+
+- Posterior probabilities over the grid
+- Equal‑tail ($1-\alpha$) credible interval ($L,U$)
+- Posterior mean
+- Prior mean
+- A tri‑plot overlaying the prior, likelihood, and posterior
+
+Below is a demonstration using a uniform prior on a grid of 101 points.
+
+```{r, fig.width=8, fig.height=5}
+result <- coin(theta = seq(0,1,length = 101), prior = "uniform", n = 10, z = 4, alpha = 0.05)
+```
+
+# Interactive Visualization with the Shiny App
+
+The package includes a Shiny application that allows users to explore the discrete‑theta Bayesian model interactively.
+
+The app includes:
+
+- A slider controlling the grid resolution (length.out in seq(0,1,...))
+- A prior selector (Uniform or Triangular)
+- A slider for α controlling the credible interval
+- A table displaying the equal‑tail interval ($L,U$)
+-A tri‑plot showing prior, likelihood, and posterior
+
+# Launching the App
+
+To run the Shiny app, we call:
+
+```{r, fig.width=8, fig.height=5}
+runCoinApp()
+```
+

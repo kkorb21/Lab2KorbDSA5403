@@ -19,7 +19,7 @@ ui <- fluidPage(
                   min = 11, max = 501, value = 101, step = 10),
 
       selectInput("priorType", "Prior distribution:",
-                  choices = c("Uniform", "Triangular")),
+                  choices = c("uniform", "triangular")),
 
       sliderInput("alpha", "Alpha (for equal-tail interval):",
                   min = 0.01, max = 0.20, value = 0.05, step = 0.01),
@@ -41,18 +41,21 @@ server <- function(input, output, session) {
 
     theta <- seq(0, 1, length.out = input$gridlen)
 
-    # Prior selection
-    prior <- switch(input$priorType,
-                    "Uniform" = rep(1/length(theta), length(theta)),
-                    "Triangular" = {
-                      p <- pmin(theta, 1 - theta)
-                      p / sum(p)
-                    })
-
-    # Call coin() from your package
-    res <- coin(theta, prior, n = input$n, z = input$z, alpha = input$alpha)
+    # Call coin() directly with prior keyword
+    res <- coin(theta,
+                prior = input$priorType,
+                n = input$n,
+                z = input$z,
+                alpha = input$alpha)
 
     posterior <- res$posterior
+    prior <- if (input$priorType == "uniform") {
+      rep(1/length(theta), length(theta))
+    } else {
+      p <- pmin(theta, 1 - theta)
+      p / sum(p)
+    }
+
     likelihood <- dbinom(input$z, size = input$n, prob = theta)
 
     plot(theta, prior, type = "l", lwd = 2, col = "blue",
@@ -75,19 +78,18 @@ server <- function(input, output, session) {
 
     theta <- seq(0, 1, length.out = input$gridlen)
 
-    prior <- switch(input$priorType,
-                    "Uniform" = rep(1/length(theta), length(theta)),
-                    "Triangular" = {
-                      p <- pmin(theta, 1 - theta)
-                      p / sum(p)
-                    })
-
-    res <- coin(theta, prior, n = input$n, z = input$z, alpha = input$alpha)
+    res <- coin(theta,
+                prior = input$priorType,
+                n = input$n,
+                z = input$z,
+                alpha = input$alpha)
 
     data.frame(
       Alpha = input$alpha,
       L = round(res$interval["L"], 4),
-      U = round(res$interval["U"], 4)
+      U = round(res$interval["U"], 4),
+      PriorMean = round(res$prior_mean, 4),
+      PosteriorMean = round(res$posterior_mean, 4)
     )
   })
 }
